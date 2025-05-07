@@ -3,25 +3,22 @@ const libs = require("../libs/httpAuth");
 
 module.exports = (app) => {
   const userCredentials = {
-    username: "admin",
-    password: "admin123",
     email: "admin@gmail.com",
+    password: "admin123",
   };
 
-  app.post("auths/login", (req, res) => {
-    // Destructuring username &amp; password from body
-    const { username, password } = req.body;
-
-    // Checking if credentials match
+  app.post("/auths/login", (req, res) => {
+    const { email, password } = req.body;
+    console.log(email, password)
     if (
-      username === userCredentials.username &&
+      email === userCredentials.email &&
       password === userCredentials.password
     ) {
       //creating a access token
       const accessToken = jwt.sign(
         {
-          username: userCredentials.username,
           email: userCredentials.email,
+          password: userCredentials.password,
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -33,7 +30,7 @@ module.exports = (app) => {
 
       const refreshToken = jwt.sign(
         {
-          username: userCredentials.username,
+          email: userCredentials.email,
         },
         process.env.REFRESH_TOKEN_SECRET,
         { expiresIn: "1d" }
@@ -55,11 +52,11 @@ module.exports = (app) => {
     }
   });
 
-  app.post("auths/refresh", (req, res) => {
+  app.post("/auths/refresh", (req, res) => {
     if (req.cookies?.jwt) {
       // Destructuring refreshToken from cookie
       const refreshToken = req.cookies.jwt;
-    //   console.log(refreshToken);
+      //   console.log(refreshToken);
       // Verifying refresh token
       jwt.verify(
         refreshToken,
@@ -72,8 +69,8 @@ module.exports = (app) => {
             // Correct token we send a new access token
             const accessToken = jwt.sign(
               {
-                username: userCredentials.username,
                 email: userCredentials.email,
+                password: userCredentials.password,
               },
               process.env.ACCESS_TOKEN_SECRET,
               {
