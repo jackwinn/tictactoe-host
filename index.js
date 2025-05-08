@@ -3,8 +3,11 @@ const cors = require("cors");
 require("dotenv").config();
 const cookieparser = require("cookie-parser");
 const { Pool } = require("pg");
+const http = require("http");
+const socketIO = require("socket.io");
 
-const port = process.env.PORT;
+const appPort = process.env.APP_PORT;
+const socketServerPort = process.env.SOCKET_SERVER_PORT;
 const accessControlAllowOrigin = process.env.ACCESS_CONTROL_ALLOW_ORIGIN;
 const app = express();
 
@@ -55,15 +58,46 @@ pool
     console.error("Pool connection error:", err);
   });
 
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: accessControlAllowOrigin, // Update with your React app's URL
+    methods: ["GET", "POST"],
+  },
+});
+
 require("./src/services/authService")(app, pool);
 require("./src/services/userService")(app, pool);
 
-app.listen(port, (error) => {
+app.listen(appPort, (error) => {
   if (error) {
     console.log(
       "An error has occurred, unable to start Tic Tac Toe host",
       error
     );
-  } else
-    console.log(`Tic Tac Toe host is running and listening on port ${port}`);
+  } else console.log(`Tic Tac Toe app running at http://localhost:${appPort}`);
+});
+
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("makeMove", (data) => {
+    console.log(`data: ${data}`);
+    io.emit("moveMade", data);
+  });
+
+  socket.on("resetGame", (newGame) => {
+    console.log(`newGame: ${newGame}`);
+    io.emit("gameReset", newGame);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
+server.listen(socketServerPort, () => {
+  console.log(
+    `Tic Tac Toe socket server running at http://localhost:${socketServerPort}`
+  );
 });
