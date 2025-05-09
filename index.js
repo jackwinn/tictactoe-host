@@ -5,8 +5,7 @@ const cookieparser = require("cookie-parser");
 const { Pool } = require("pg");
 
 const appPort = process.env.APP_PORT;
-// const accessControlAllowOrigin = process.env.ACCESS_CONTROL_ALLOW_ORIGIN;
-const accessControlAllowOrigin = "https://jackwinn.github.io";
+const accessControlAllowOrigin = process.env.ACCESS_CONTROL_ALLOW_ORIGIN;
 const app = express();
 
 app.use(cors({ origin: accessControlAllowOrigin, credentials: true }));
@@ -66,5 +65,5 @@ app.listen(appPort, (error) => {
       "An error has occurred, unable to start Tic Tac Toe host",
       error
     );
-  } else console.log(`Tic Tac Toe app running at http://localhost:${appPort}`);
+  } else console.log(`Tic Tac Toe app running at ${process.env.DATABASE_URL}:${appPort}`);
 });

@@ -23,7 +23,7 @@ module.exports = (app, pool) => {
           },
           process.env.ACCESS_TOKEN_SECRET,
           {
-            expiresIn: "10m",
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
           }
         );
 
@@ -33,7 +33,7 @@ module.exports = (app, pool) => {
             username: userFound.username,
           },
           process.env.REFRESH_TOKEN_SECRET,
-          { expiresIn: "1d" }
+          { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN }
         );
 
         res.cookie("jwt", refreshToken, {
