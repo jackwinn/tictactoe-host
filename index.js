@@ -4,7 +4,7 @@ require("dotenv").config();
 const cookieparser = require("cookie-parser");
 const { Pool } = require("pg");
 const http = require("http");
-const { Server } = require("socket.io");
+const socketIO = require("socket.io");
 
 const appPort = process.env.APP_PORT;
 const accessControlAllowOrigin = process.env.ACCESS_CONTROL_ALLOW_ORIGIN;
@@ -85,5 +85,3 @@ server.listen(appPort, () => {
 require("./src/services/authService")(app, pool);
 require("./src/services/userService")(app, pool);
 require("./src/services/websocketService")(app, pool, io);
-
-
