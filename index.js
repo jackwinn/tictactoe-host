@@ -3,6 +3,8 @@ const cors = require("cors");
 require("dotenv").config();
 const cookieparser = require("cookie-parser");
 const { Pool } = require("pg");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const appPort = process.env.APP_PORT;
 const accessControlAllowOrigin = process.env.ACCESS_CONTROL_ALLOW_ORIGIN;
@@ -55,15 +57,33 @@ pool
     console.error("Pool connection error:", err);
   });
 
+const server = http.createServer(app);
+
+const io = socketIO(server, {
+  cors: {
+    origin: accessControlAllowOrigin,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+server.listen(appPort, () => {
+  console.log(
+    `Tic Tac Toe socket server running at ${process.env.BACKEND_URL}:${appPort}`
+  );
+});
+
+// app.listen(appPort, (error) => {
+//   if (error) {
+//     console.log(
+//       "An error has occurred, unable to start Tic Tac Toe host",
+//       error
+//     );
+//   } else console.log(`Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`);
+// });
+
 require("./src/services/authService")(app, pool);
 require("./src/services/userService")(app, pool);
-require("./src/services/websocketService")(app, pool, accessControlAllowOrigin);
+require("./src/services/websocketService")(app, pool, io);
 
-app.listen(appPort, (error) => {
-  if (error) {
-    console.log(
-      "An error has occurred, unable to start Tic Tac Toe host",
-      error
-    );
-  } else console.log(`Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`);
-});
+
