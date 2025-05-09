@@ -65,5 +65,5 @@ app.listen(appPort, (error) => {
       "An error has occurred, unable to start Tic Tac Toe host",
       error
     );
-  } else console.log(`Tic Tac Toe app running at ${process.env.DATABASE_URL}:${appPort}`);
+  } else console.log(`Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`);
 });

@@ -9,12 +9,13 @@ module.exports = (app, pool, accessControlAllowOrigin) => {
     cors: {
       origin: accessControlAllowOrigin,
       methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 
   server.listen(socketServerPort, () => {
     console.log(
-      `Tic Tac Toe socket server running at http://localhost:${socketServerPort}`
+      `Tic Tac Toe socket server running at ${process.env.BACKEND_URL}:${socketServerPort}`
     );
   });
 
