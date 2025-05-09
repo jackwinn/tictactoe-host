@@ -30,7 +30,7 @@ module.exports = (io
       socket: socket,
       online: true,
     };
-
+    console.log(allUsers)
     socket.on("request_to_play", (data) => {
       const currentUser = allUsers[socket.id];
       currentUser.playerName = data.playerName;
