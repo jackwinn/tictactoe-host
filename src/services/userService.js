@@ -1,11 +1,14 @@
 const libs = require("../libs/httpAuth");
-const bycrpt = require("bcrypt");
+const bcrypt = require("bcrypt");
 
 module.exports = (app, pool) => {
-  app.get("/users/me", libs.authenticateToken, (req, res) => {
-    res.json({
-      user: req.user,
-    });
+  app.get("/users/me", libs.authenticateToken, async (req, res) => {
+    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+      req.user.email,
+    ]);
+
+    const { password, ...rest } = user.rows[0];
+    return res.json({ ...rest });
   });
 
   app.post("/users/register", async (req, res) => {
@@ -24,21 +27,17 @@ module.exports = (app, pool) => {
         return res.status(409).json({ message: "User already exists" });
       }
 
-      const hashedPassword = await bycrpt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-      const insertUserQuery = `INSERT INTO users (username, email, password) 
+      const insertUserQuery = `INSERT INTO users (email, password, username) 
             VALUES ($1, $2, $3)`;
 
-      await pool.query(insertUserQuery, [
-        email, 
-        hashedPassword, 
-        username,
-      ]);
+      await pool.query(insertUserQuery, [email, hashedPassword, username]);
 
-      res.status(201).json({ message: "User registered successfully" });
+      return res.status(201).json({ message: "User registered successfully" });
     } catch (err) {
       console.error("Registration error:", err);
-      res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -55,10 +54,10 @@ module.exports = (app, pool) => {
 
     try {
       await pool.query(createTableQuery);
-      res.status(200).json({ message: "Table created successfully" });
+      return res.status(200).json({ message: "Table created successfully" });
     } catch (err) {
       console.error("Error creating table:", err);
-      res.status(500).json({ error: "Failed to create table" });
+      return res.status(500).json({ error: "Failed to create table" });
     }
   });
 };

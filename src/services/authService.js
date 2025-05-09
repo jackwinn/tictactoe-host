@@ -1,41 +1,55 @@
 const jwt = require("jsonwebtoken");
 const libs = require("../libs/httpAuth");
+const bcrypt = require("bcrypt");
 
 module.exports = (app, pool) => {
   app.post("/auths/login", async (req, res) => {
     const { email, password } = req.body;
-    console.log(email, password);
 
     const findUserQuery = `SELECT * FROM users WHERE email = $1`;
 
-    const existingUserResult = await pool.query(findUserQuery, [email]);
-    if (existingUserResult) {
-      const accessToken = jwt.sign(
-        {
-          email: email,
-          password: password,
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        {
-          expiresIn: "10m",
-        }
-      );
+    const existingUser = await pool.query(findUserQuery, [email]);
 
-      const refreshToken = jwt.sign(
-        {
-          email: email,
-        },
-        process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: "1d" }
-      );
+    if (existingUser.rows.length > 0) {
+      const userFound = existingUser.rows[0];
 
-      res.cookie("jwt", refreshToken, {
-        httpOnly: true,
-        sameSite: "None",
-        secure: true,
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-      return res.json({ accessToken });
+      const isPasswordMatch = await bcrypt.compare(password, userFound.password);
+      // console.log(isPasswordMatch)
+      if (isPasswordMatch) {  
+        const accessToken = jwt.sign(
+          {
+            email: userFound.email,
+            username: userFound.username,
+          },
+          process.env.ACCESS_TOKEN_SECRET,
+          {
+            expiresIn: "10m",
+          }
+        );
+
+        const refreshToken = jwt.sign(
+          {
+            email: userFound.email,
+            username: userFound.username,
+          },
+          process.env.REFRESH_TOKEN_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        res.cookie("jwt", refreshToken, {
+          httpOnly: true,
+          sameSite: "None",
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+        });
+
+        const result = {
+          accessToken: accessToken,
+        };
+        return res.json(result);
+      } else {
+        return res.json({ message: "Password is not match" });
+      }
     } else {
       return res.status(406).json({
         message: "Invalid credentials",
