@@ -71,7 +71,7 @@ const io = socketIO(server, {
 
 require("./src/services/authService")(app, pool);
 require("./src/services/userService")(app, pool);
-require("./src/services/websocketService")(io);
+require("./src/services/ticTacToeService")(io);
 
 server.listen(appPort, (error) => {
   if (error) {
