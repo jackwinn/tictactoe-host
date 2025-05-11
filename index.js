@@ -1,6 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
+const env = process.env.NODE_ENV;
+dotenv.config({ path: path.resolve(__dirname, `.env.${env}`) });
 const cookieparser = require("cookie-parser");
 const { Pool } = require("pg");
 const http = require("http");
@@ -57,18 +60,6 @@ pool
     console.error("Pool connection error:", err);
   });
 
-// app.listen(4000, (error) => {
-//   if (error) {
-//     console.log(
-//       "An error has occurred, unable to start Tic Tac Toe host",
-//       error
-//     );
-//   } else
-//     console.log(
-//       `Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`
-//     );
-// });
-
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
@@ -78,90 +69,16 @@ const io = socketIO(server, {
   },
 });
 
+require("./src/services/authService")(app, pool);
+require("./src/services/userService")(app, pool);
+require("./src/services/websocketService")(io);
+
 server.listen(appPort, (error) => {
   if (error) {
     console.log("An error occurred, unable to start Tic Tac Toe host", error);
   } else {
-    console.log(`Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`);
+    console.log(
+      `Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`
+    );
   }
 });
-
-const allUsers = {};
-  const allRooms = [];
-
-  io.on("connection", (socket) => {
-    allUsers[socket.id] = {
-      socket: socket,
-      online: true,
-    };
-    socket.on("request_to_play", (data) => {
-      const currentUser = allUsers[socket.id];
-      currentUser.playerName = data.playerName;
-
-      let opponentPlayer;
-
-      for (const key in allUsers) {
-        const user = allUsers[key];
-        if (user.online && !user.playing && socket.id !== key) {
-          opponentPlayer = user;
-          break;
-        }
-      }
-
-      if (opponentPlayer) {
-        allRooms.push({
-          player1: opponentPlayer,
-          player2: currentUser,
-        });
-
-        currentUser.socket.emit("OpponentFound", {
-          opponentName: opponentPlayer.playerName,
-          playingAs: "circle",
-        });
-
-        opponentPlayer.socket.emit("OpponentFound", {
-          opponentName: currentUser.playerName,
-          playingAs: "cross",
-        });
-
-        currentUser.socket.on("playerMoveFromClient", (data) => {
-          opponentPlayer.socket.emit("playerMoveFromServer", {
-            ...data,
-          });
-        });
-
-        opponentPlayer.socket.on("playerMoveFromClient", (data) => {
-          currentUser.socket.emit("playerMoveFromServer", {
-            ...data,
-          });
-        });
-      } else {
-        currentUser.socket.emit("OpponentNotFound");
-      }
-    });
-
-    socket.on("disconnect", function () {
-      const currentUser = allUsers[socket.id];
-      currentUser.online = false;
-      currentUser.playing = false;
-
-      for (let index = 0; index < allRooms.length; index++) {
-        const { player1, player2 } = allRooms[index];
-
-        if (player1.socket.id === socket.id) {
-          player2.socket.emit("opponentLeftMatch");
-          break;
-        }
-
-        if (player2.socket.id === socket.id) {
-          player1.socket.emit("opponentLeftMatch");
-          break;
-        }
-      }
-    });
-  });
-
-
-require("./src/services/authService")(app, pool);
-require("./src/services/userService")(app, pool);
-// require("./src/services/websocketService")(app, pool, io);

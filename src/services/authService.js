@@ -13,9 +13,12 @@ module.exports = (app, pool) => {
     if (existingUser.rows.length > 0) {
       const userFound = existingUser.rows[0];
 
-      const isPasswordMatch = await bcrypt.compare(password, userFound.password);
+      const isPasswordMatch = await bcrypt.compare(
+        password,
+        userFound.password
+      );
       // console.log(isPasswordMatch)
-      if (isPasswordMatch) {  
+      if (isPasswordMatch) {
         const accessToken = jwt.sign(
           {
             email: userFound.email,
@@ -46,14 +49,12 @@ module.exports = (app, pool) => {
         const result = {
           accessToken: accessToken,
         };
-        return res.json(result);
+        return res.status(200).json(result);
       } else {
-        return res.json({ message: "Password is not match" });
+        return res.status(401).json({ message: "Password is not match." });
       }
     } else {
-      return res.status(406).json({
-        message: "Invalid credentials",
-      });
+      return res.status(400).end();
     }
   });
 
@@ -67,7 +68,7 @@ module.exports = (app, pool) => {
         process.env.REFRESH_TOKEN_SECRET,
         (err, decoded) => {
           if (err) {
-            return res.status(406).json({ message: "Unauthorized" });
+            return res.status(401).end();
           } else {
             const accessToken = jwt.sign(
               {
@@ -84,7 +85,7 @@ module.exports = (app, pool) => {
         }
       );
     } else {
-      return res.status(406).json({ message: "Unauthorized" });
+      return res.status(401).end();
     }
   });
 };

@@ -1,27 +1,4 @@
-// const http = require("http");
-// const socketIO = require("socket.io");
-// const socketServerPort = process.env.SOCKET_SERVER_PORT;
-
-module.exports = (io
-  // pool, accessControlAllowOrigin
-
-) => {
-  // const server = http.createServer(app);
-
-  // const io = socketIO(server, {
-  //   cors: {
-  //     origin: accessControlAllowOrigin,
-  //     methods: ["GET", "POST"],
-  //     credentials: true,
-  //   },
-  // });
-
-  // server.listen(socketServerPort, () => {
-  //   console.log(
-  //     `Tic Tac Toe socket server running at ${process.env.BACKEND_URL}:${socketServerPort}`
-  //   );
-  // });
-
+module.exports = (io) => {
   const allUsers = {};
   const allRooms = [];
 
@@ -30,7 +7,7 @@ module.exports = (io
       socket: socket,
       online: true,
     };
-    console.log(allUsers)
+    console.log(allUsers);
     socket.on("request_to_play", (data) => {
       const currentUser = allUsers[socket.id];
       currentUser.playerName = data.playerName;

@@ -7,7 +7,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
+    "start:local": "cross-env NODE_ENV=local nodemon index.js",
+    "start:prod": "cross-env NODE_ENV=prod nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

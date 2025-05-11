@@ -3,20 +3,23 @@ const bcrypt = require("bcrypt");
 
 module.exports = (app, pool) => {
   app.get("/users/me", libs.authenticateToken, async (req, res) => {
-    const user = await pool.query("SELECT * FROM users WHERE email = $1", [
-      req.user.email,
-    ]);
+    try {
+      const user = await pool.query("SELECT * FROM users WHERE email = $1", [
+        req.user.email,
+      ]);
 
-    const { password, ...rest } = user.rows[0];
-    return res.json({ ...rest });
+      if (!user) return res.status(404).json({ message: "User not found." });
+      const { password, ...rest } = user.rows[0];
+      return res.status(200).json({ ...rest });
+    } catch (err) {
+      return res.status(500).end();
+    }
   });
 
   app.post("/users/register", async (req, res) => {
     const { email, password, username } = req.body;
-    console.log(req.body);
 
-    if (!email || !password || !username)
-      return res.status(400).json({ message: "All fields are required" });
+    if (!email || !password || !username) return res.status(412).end();
 
     const findUserQuery = `SELECT * FROM users WHERE email = $1`;
 
@@ -24,7 +27,7 @@ module.exports = (app, pool) => {
       const existingUserResult = await pool.query(findUserQuery, [email]);
 
       if (existingUserResult.rows.length > 0) {
-        return res.status(409).json({ message: "User already exists" });
+        return res.status(409).json({ message: "User already exists." });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,11 +36,9 @@ module.exports = (app, pool) => {
             VALUES ($1, $2, $3)`;
 
       await pool.query(insertUserQuery, [email, hashedPassword, username]);
-
-      return res.status(201).json({ message: "User registered successfully" });
+      return res.status(201).json({ message: "User registered successfully." });
     } catch (err) {
-      console.error("Registration error:", err);
-      return res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error." });
     }
   });
 
@@ -57,7 +58,7 @@ module.exports = (app, pool) => {
       return res.status(200).json({ message: "Table created successfully" });
     } catch (err) {
       console.error("Error creating table:", err);
-      return res.status(500).json({ error: "Failed to create table" });
+      return res.status(500).end();
     }
   });
 };
