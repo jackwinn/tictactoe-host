@@ -26,7 +26,7 @@
 - select Github repository > key in Web Service name > select a region
 - edit the start command to: cross-env NODE_ENV=prod node index.js
 - select "instance type": Free
-- finally click "deploy web service"
+- finally click "Deploy Web Service"
 
 4. Live link to deployed application:
 - https://tictactoe-host.onrender.com
