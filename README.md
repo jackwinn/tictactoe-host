@@ -2,6 +2,7 @@
 - clone the Github repository to your desired folder
 - open the project in your preferred code editor
 - ensure your node version is 20.18.0 or above
+- ensure you are using npm package manager
 - in the terminal, run the command: npm i to install dependencies
 - in the terminal, run the command: npm run start:local to start the server
 
