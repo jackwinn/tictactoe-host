@@ -42,23 +42,23 @@ module.exports = (app, pool) => {
     }
   });
 
-  app.post("/create-users-table", async (req, res) => {
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        password VARCHAR(100) NOT NULL,
-        username VARCHAR(100) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
+  // app.post("users/create-table", async (req, res) => {
+  //   const createTableQuery = `
+  //     CREATE TABLE IF NOT EXISTS users (
+  //       id SERIAL PRIMARY KEY,
+  //       email VARCHAR(100) UNIQUE NOT NULL,
+  //       password VARCHAR(100) NOT NULL,
+  //       username VARCHAR(100) NOT NULL,
+  //       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  //     );
+  //   `;
 
-    try {
-      await pool.query(createTableQuery);
-      return res.status(200).json({ message: "Table created successfully" });
-    } catch (err) {
-      console.error("Error creating table:", err);
-      return res.status(500).end();
-    }
-  });
+  //   try {
+  //     await pool.query(createTableQuery);
+  //     return res.status(200).json({ message: "Table created successfully" });
+  //   } catch (err) {
+  //     console.error("Error creating table:", err);
+  //     return res.status(500).end();
+  //   }
+  // });
 };

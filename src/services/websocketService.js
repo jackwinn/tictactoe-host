@@ -3,18 +3,26 @@ module.exports = (io) => {
   const allRooms = [];
 
   io.on("connection", (socket) => {
+    // console.log("socket");
+    // console.log(socket.id);
+
     allUsers[socket.id] = {
       socket: socket,
       online: true,
+      playing: false,
     };
-    console.log(allUsers);
+
     socket.on("request_to_play", (data) => {
-      const currentUser = allUsers[socket.id];
+      let currentUser = allUsers[socket.id];
       currentUser.playerName = data.playerName;
 
       let opponentPlayer;
+      // console.log("user joined");
+      // console.log(allUsers);
 
       for (const key in allUsers) {
+        // console.log("key")
+        // console.log(key)
         const user = allUsers[key];
         if (user.online && !user.playing && socket.id !== key) {
           opponentPlayer = user;
@@ -23,6 +31,9 @@ module.exports = (io) => {
       }
 
       if (opponentPlayer) {
+        opponentPlayer.playing = true;
+        currentUser.playing = true;
+
         allRooms.push({
           player1: opponentPlayer,
           player2: currentUser,
@@ -56,22 +67,34 @@ module.exports = (io) => {
 
     socket.on("disconnect", function () {
       const currentUser = allUsers[socket.id];
-      currentUser.online = false;
-      currentUser.playing = false;
 
-      for (let index = 0; index < allRooms.length; index++) {
-        const { player1, player2 } = allRooms[index];
+      if (currentUser) {
+        currentUser.online = false;
+        currentUser.playing = false;
+      }
+
+      for (let i = 0; i < allRooms.length; i++) {
+        const { player1, player2 } = allRooms[i];
 
         if (player1.socket.id === socket.id) {
-          player2.socket.emit("opponentLeftMatch");
+          if (player2?.socket) {
+            player2.socket.emit("opponentLeftMatch");
+          }
+          allRooms.splice(i, 1);
           break;
         }
 
         if (player2.socket.id === socket.id) {
-          player1.socket.emit("opponentLeftMatch");
+          if (player1?.socket) {
+            player1.socket.emit("opponentLeftMatch");
+          }
+          allRooms.splice(i, 1);
           break;
         }
       }
+
+      // console.log("user left");
+      // console.log(allUsers);
     });
   });
 };

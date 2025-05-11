@@ -26,7 +26,8 @@ module.exports = (app, pool) => {
           },
           process.env.ACCESS_TOKEN_SECRET,
           {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+            // expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
+            expiresIn: "5s",
           }
         );
 
@@ -60,9 +61,8 @@ module.exports = (app, pool) => {
 
   app.post("/auths/refreshToken", (req, res) => {
     if (req.cookies?.jwt) {
-      console.log(`req.cookies?.jwt: ${req.cookies?.jwt}`);
+      // console.log(`req.cookies?.jwt: ${req.cookies?.jwt}`);
       const refreshToken = req.cookies.jwt;
-
       jwt.verify(
         refreshToken,
         process.env.REFRESH_TOKEN_SECRET,
@@ -72,15 +72,19 @@ module.exports = (app, pool) => {
           } else {
             const accessToken = jwt.sign(
               {
-                email: userCredentials.email,
-                password: userCredentials.password,
+                email: decoded.email,
+                password: decoded.username,
               },
               process.env.ACCESS_TOKEN_SECRET,
               {
-                expiresIn: "10m",
+                expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN,
               }
             );
-            return res.json({ accessToken });
+
+            const result = {
+              refreshedToken: accessToken,
+            };
+            return res.status(200).json(result);
           }
         }
       );
