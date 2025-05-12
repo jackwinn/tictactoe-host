@@ -49,6 +49,12 @@ module.exports = (io) => {
           playingAs: "cross",
         });
 
+        // console.log('Game Matched')
+        // console.log(allRooms)
+
+        // console.log("user playing");
+        // console.log(allUsers);
+
         currentUser.socket.on("playerMoveFromClient", (data) => {
           opponentPlayer.socket.emit("playerMoveFromServer", {
             ...data,
@@ -58,6 +64,42 @@ module.exports = (io) => {
         opponentPlayer.socket.on("playerMoveFromClient", (data) => {
           currentUser.socket.emit("playerMoveFromServer", {
             ...data,
+          });
+        });
+
+        currentUser.socket.on("rechallengeRequestedFromClient", (data) => {
+          opponentPlayer.socket.emit("rechallengeRequestedFromServer", {
+            rechallengeConfimation: true,
+          });
+        });
+
+        opponentPlayer.socket.on("rechallengeRequestedFromClient", (data) => {
+          currentUser.socket.emit("rechallengeRequestedFromServer", {
+            rechallengeConfimation: true,
+          });
+        });
+
+        currentUser.socket.on("rechallengeAcceptedFromClient", (data) => {
+          opponentPlayer.socket.emit("rechallengeAcceptedFromServer", {
+            rechallengeConfirmed: true,
+          });
+        });
+
+        opponentPlayer.socket.on("rechallengeAcceptedFromClient", (data) => {
+          currentUser.socket.emit("rechallengeAcceptedFromServer", {
+            rechallengeConfirmed: true,
+          });
+        });
+
+        currentUser.socket.on("rechallengeDeclinedFromClient", (data) => {
+          opponentPlayer.socket.emit("rechallengeDeclinedFromServer", {
+            rechallengeDeclined: true,
+          });
+        });
+
+        opponentPlayer.socket.on("rechallengeDeclinedFromClient", (data) => {
+          currentUser.socket.emit("rechallengeDeclinedFromServer", {
+            rechallengeDeclined: true,
           });
         });
       } else {
@@ -73,8 +115,13 @@ module.exports = (io) => {
         currentUser.playing = false;
       }
 
+      // console.log("currentUser")
+      // console.log(currentUser)
+
       for (let i = 0; i < allRooms.length; i++) {
         const { player1, player2 } = allRooms[i];
+
+        // console.log(player1, player2);
 
         if (player1.socket.id === socket.id) {
           if (player2?.socket) {
@@ -95,6 +142,9 @@ module.exports = (io) => {
 
       // console.log("user left");
       // console.log(allUsers);
+
+      // console.log('Game Disconnect')
+      // console.log(allRooms)
     });
   });
 };
