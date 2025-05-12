@@ -41,6 +41,44 @@ module.exports = (app, pool) => {
       return res.status(500).json({ message: "Internal server error." });
     }
   });
+  // libs.authenticateToken,
+  app.post("/users/updateScore", async (req, res) => {
+    try {
+      const { gameResult, userId } = req.body;
+      const allowedResults = ["win", "lose", "draw"];
+
+      if (!allowedResults.includes(gameResult)) {
+        return res.status(400).json({ message: "Invalid result type." });
+      }
+
+      const resultMap = {
+        win: "win_score",
+        lose: "lose_score",
+        draw: "draw_score",
+      };
+
+      const column = resultMap[gameResult];
+      // console.log(column)
+      await pool.query(
+        `UPDATE users SET ${column} = ${column} + 1 WHERE id= $1`,
+        [userId]
+      );
+
+      const user = await pool.query("SELECT * FROM users WHERE id = $1", [
+        userId,
+      ]);
+      // console.log(user);
+
+      if (user.rows.length === 0)
+        return res.status(404).json({ message: "User not found." });
+
+      const { password, ...rest } = user.rows[0];
+      return res.status(200).json({ ...rest });
+    } catch (err) {
+      // console.error(err);
+      return res.status(500).json({ message: "Server error." });
+    }
+  });
 
   // app.post("users/create-table", async (req, res) => {
   //   const createTableQuery = `
