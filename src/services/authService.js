@@ -55,7 +55,7 @@ module.exports = (app, pool) => {
         return res.status(401).json({ message: "Password is not match." });
       }
     } else {
-      return res.status(400).end();
+      return res.status(400).json({message: "User not found."});
     }
   });
 
