@@ -80,5 +80,8 @@ server.listen(appPort, (error) => {
     console.log(
       `Tic Tac Toe app running at ${process.env.BACKEND_URL}:${appPort}`
     );
+     console.log(
+      `Tic Tac Toe app connected to ${process.env.DATABASE_UR}`
+    );
   }
 });
