@@ -18,9 +18,9 @@ module.exports = (app, pool) => {
 
   app.post("/users/register", async (req, res) => {
     const { email, password, username } = req.body;
-
+  
     if (!email || !password || !username) return res.status(412).end();
-
+    // console.log(email, password, username);
     const findUserQuery = `SELECT * FROM users WHERE email = $1`;
 
     try {
@@ -38,10 +38,11 @@ module.exports = (app, pool) => {
       await pool.query(insertUserQuery, [email, hashedPassword, username]);
       return res.status(201).json({ message: "User registered successfully." });
     } catch (err) {
+      // console.error(err);
       return res.status(500).json({ message: "Internal server error." });
     }
   });
-  // libs.authenticateToken,
+
   app.post("/users/updateScore", async (req, res) => {
     try {
       const { gameResult, userId } = req.body;
@@ -80,26 +81,43 @@ module.exports = (app, pool) => {
     }
   });
 
-  app.post("/users/create-table", async (req, res) => {
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email VARCHAR(30) UNIQUE NOT NULL,
-        password VARCHAR(30) NOT NULL,
-        username VARCHAR(50) NOT NULL,
-        win_score INT DEFAULT 0,
-        lose_score INT DEFAULT 0,
-        draw_score INT DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
+  app.get("/users/list", async (req, res) => {
+    const query = `
+    SELECT username, win_score, lose_score, draw_score
+    FROM users
+    ORDER BY win_score DESC
+    LIMIT 10;
+  `;
 
     try {
-      await pool.query(createTableQuery);
-      return res.status(200).json({ message: "Table created successfully" });
+      const result = await pool.query(query);
+      return res.status(200).json(result.rows);
     } catch (err) {
-      console.error("Error creating table:", err);
-      return res.status(500).end();
+      console.error("Error fetching users:", err);
+      return res.status(500).json({ message: "Internal server error." });
     }
   });
+
+  // app.post("/users/create-table", async (req, res) => {
+  //   const createTableQuery = `
+  //     CREATE TABLE IF NOT EXISTS users (
+  //       id SERIAL PRIMARY KEY,
+  //       email VARCHAR(100) UNIQUE NOT NULL,
+  //       password VARCHAR(100) NOT NULL,
+  //       username VARCHAR(100) NOT NULL,
+  //       win_score INT DEFAULT 0,
+  //       lose_score INT DEFAULT 0,
+  //       draw_score INT DEFAULT 0,
+  //       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  //     );
+  //   `;
+
+  //   try {
+  //     await pool.query(createTableQuery);
+  //     return res.status(200).json({ message: "Table created successfully" });
+  //   } catch (err) {
+  //     console.error("Error creating table:", err);
+  //     return res.status(500).end();
+  //   }
+  // });
 };
