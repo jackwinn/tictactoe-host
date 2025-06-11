@@ -19,7 +19,7 @@
 - pg. PostgreSQL client for Node.js, used to interact with a PostgreSQL database.
 
 
-3. Render deployment instructions:
+3. Deployment instructions on Render:
 - create an account on Render: https://render.com/
 - go to "New" > "Web Service"
 - select Git Provider > login to your Github account 
@@ -35,8 +35,7 @@
 - Rechallenge option
 - Scoreboard
 
-6. Demo Instructions: 
-demo instructions: 
+6. Demo Instructions:  
 - create 2 accounts with different emails
 - login 1 account in regular mode and another 1 in incognito mode (your preferred browser)
 - click "Play Online" on both window to start the match
